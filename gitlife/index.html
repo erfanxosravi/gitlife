@@ -1,36 +1,368 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" class="h-full bg-slate-100">
+<html lang="fa-IR" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شبیه‌ساز زندگی</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-          darkMode: 'class',
-        }
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #1e293b;
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --card-bg-color: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        html.dark {
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --card-bg-color: #1e293b;
+            --border-color: #334155;
+        }
+
         body {
-            font-family: 'Vazirmatn', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Screens --- */
+        #start-screen, #game-over-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        #game-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* --- Layout --- */
+        #header {
+            background-color: var(--card-bg-color);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        #footer {
+            background-color: var(--card-bg-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- Components --- */
+        #stats-panel {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .progress-bar .label {
+            width: 5rem;
+            font-weight: bold;
+        }
+        .progress-bar .bar {
+            flex-grow: 1;
+            background-color: #e5e7eb;
+            border-radius: 99px;
+            height: 20px;
+        }
+        .progress-bar .fill {
+            background-color: var(--secondary-color);
+            height: 100%;
+            border-radius: 99px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            line-height: 20px;
+        }
+
+        #action-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        button, .button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        button:hover, .button:hover {
+            background-color: #2563eb;
+        }
+        button.secondary, .button.secondary {
+            background-color: var(--secondary-color);
+        }
+        button.secondary:hover, .button.secondary:hover {
+            background-color: #059669;
+        }
+        button:disabled, .button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* --- Modal --- */
+        #modal-container {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #modal-content {
+            background-color: var(--card-bg-color);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.1.1/",
-    "react": "https://esm.sh/react@^19.1.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
 </head>
-<body class="h-full overflow-hidden">
-    <div id="root" class="h-full"></div>
-    <script type="module" src="/index.tsx"></script>
+<body>
+    <div id="app">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>شبیه‌ساز زندگی</h1>
+            <p>یک زندگی جدید را شروع کن...</p>
+            <button id="new-game-button">شروع بازی جدید</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <header id="header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 id="player-name">نام بازیکن</h2>
+                        <p id="player-status">وضعیت</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 id="player-money" style="color: var(--secondary-color);">$0</h2>
+                        <p>موجودی</p>
+                    </div>
+                </div>
+            </header>
+            <main id="main-content">
+                <!-- Log entries will be added here -->
+            </main>
+            <footer id="footer">
+                <div id="action-bar">
+                    <button id="career-button">حرفه</button>
+                    <button id="next-year-button" class="secondary">سال بعد</button>
+                </div>
+                <div id="stats-panel">
+                    <!-- Progress bars will be rendered here -->
+                </div>
+            </footer>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="hidden">
+            <h1>بازی تمام شد</h1>
+            <p id="death-reason">دلیل مرگ...</p>
+            <button id="restart-button">شروع مجدد</button>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal-container" class="hidden">
+            <div id="modal-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <h3 id="modal-title">عنوان مودال</h3>
+                    <button id="modal-close-button" style="background: none; color: var(--text-color); font-size: 24px; padding: 0;">&times;</button>
+                </div>
+                <div id="modal-body">
+                    <!-- Modal content goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME LOGIC (from previous step) ---
+        const getRandom = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+        const COUNTRIES = [{ name: "ایران", flag: "🇮🇷" }, { name: "آمریکا", flag: "🇺🇸" }];
+        const CITIES = { "ایران": ["تهران", "اصفهان"], "آمریکا": ["نیویورک", "لس آنجلس"] };
+        const SKILLS_DATA = [{ id: 'acting', name: 'بازیگری', cost: 1200, description: 'یادگیری فنون بازیگری.' }];
+        const DIRECTORS = [{ id: 1, name: "اصغر فرهادی", fame: 95 }, { id: 2, name: "Christopher Nolan", fame: 98 }];
+        const generateMovieTitle = () => `فیلم ${getRandom(100, 999)}`;
+        const FIRST_NAMES_MALE = ["امیر", "کیان"];
+        const FIRST_NAMES_FEMALE = ["سارا", "آوا"];
+        const LAST_NAMES = ["رضایی", "محمدی"];
+        function createNewPlayer(config = {}) { const gender = config.gender || (Math.random() > 0.5 ? 'مرد' : 'زن'); const name = config.name || (gender === 'مرد' ? FIRST_NAMES_MALE[getRandom(0, FIRST_NAMES_MALE.length - 1)] : FIRST_NAMES_FEMALE[getRandom(0, FIRST_NAMES_FEMALE.length - 1)]) + ' ' + LAST_NAMES[getRandom(0, LAST_NAMES.length-1)]; const countryData = COUNTRIES[getRandom(0, COUNTRIES.length - 1)]; return { name, gender, age: 0, country: countryData.name, countryFlag: countryData.flag, city: CITIES[countryData.name][0], money: 500, health: 100, happiness: 80, intelligence: getRandom(50, 100), looks: getRandom(30, 100), popularity: 0, job: null, educationStatus: { stage: 'بیکار' }, alive: true, skills: {}, activeActingProject: null, completedActingProjects: [] }; }
+        function advanceYear(player) { let newPlayerState = { ...player, age: player.age + 1 }; const log = [`${newPlayerState.age} ساله شدی.`]; if (newPlayerState.activeActingProject) { const project = newPlayerState.activeActingProject; log.push(`یک سال دیگر در پروژه "${project.name}" سپری شد.`); project.yearsLeft--; newPlayerState.skills.acting = clamp((newPlayerState.skills.acting || 0) + getRandom(2, 5), 0, 100); if (project.yearsLeft <= 0) { log.push(`فیلم‌برداری پروژه "${project.name}" به پایان رسید!`); const rating = (project.storyQuality * 0.4) + (project.director.fame * 0.3) + (project.playerPerformance * 0.3); project.finalRating = clamp(Math.round(rating), 0, 100); const income = Math.round((project.budget / 100) * (project.finalRating / 10)); const popularityGain = Math.round(project.finalRating / 5); newPlayerState.money += income; newPlayerState.popularity = clamp(newPlayerState.popularity + popularityGain, 0, 100); log.push(`این فیلم امتیاز نهایی ${project.finalRating} را کسب کرد و شما ${income.toLocaleString()} تومان درآمد داشتید.`); newPlayerState.completedActingProjects.push(project); newPlayerState.activeActingProject = null; } } if (newPlayerState.health <= 0) { newPlayerState.alive = false; log.push("عمرت به پایان رسید."); } return { newPlayerState, log }; }
+        function getAvailableAuditions(player) { if (player.activeActingProject) return []; const auditions = []; for (let i = 0; i < 3; i++) { const director = DIRECTORS[getRandom(0, DIRECTORS.length - 1)]; const role = ['اصلی', 'مکمل', 'سیاهی لشکر'][getRandom(0,2)]; auditions.push({ id: `proj_${Date.now()}_${i}`, name: generateMovieTitle(), type: 'سینما', role, director, budget: getRandom(100000, 5000000), storyQuality: getRandom(30, 90), duration: getRandom(1,3), yearsLeft: 0, playerPerformance: 0, finalRating: 0, }); } return auditions; }
+        function auditionForProject(player, project) { if (player.job || player.activeActingProject) return { player, message: "شما در حال حاضر نمی‌توانید در تست بازیگری شرکت کنید."}; const actingSkill = player.skills['acting'] || 0; const successChance = (actingSkill * 0.4) + (player.looks * 0.2) + (player.popularity * 0.1); let requiredScore = 50; if (project.role === 'مکمل') requiredScore = 65; if (project.role === 'اصلی') requiredScore = 80; if (successChance >= requiredScore) { const newProject = { ...project, yearsLeft: project.duration, playerPerformance: 50 }; const newPlayer = { ...player, activeActingProject: newProject }; return { player: newPlayer, message: `شما نقش ${project.role} را در فیلم "${project.name}" به دست آوردید.` }; } else { const newPlayer = {...player, happiness: clamp(player.happiness - 5, 0, 100)}; return { player: newPlayer, message: `در تست بازیگری رد شدید.` }; } }
+        function practiceRole(player) { if (!player.activeActingProject) return { player, message: "شما در پروژه‌ای فعال نیستید." }; const performanceGain = getRandom(5, 15); player.activeActingProject.playerPerformance = clamp(player.activeActingProject.playerPerformance + performanceGain, 0, 100); player.skills.acting = clamp((player.skills.acting || 0) + 1, 0, 100); return { player, message: `عملکردت ${performanceGain} واحد بهتر شد.` }; }
+        function learnSkill(player, skillId) { const skillData = SKILLS_DATA.find(s => s.id === skillId); if (!skillData || player.money < skillData.cost) return { player, message: "پول کافی نداری."}; player.money -= skillData.cost; player.skills[skillId] = clamp((player.skills[skillId] || 0) + getRandom(10, 20), 0, 100); return { player, message: `در دوره ${skillData.name} شرکت کردی.`}; }
+
+        // --- UI & APP LOGIC ---
+        let gameState = { player: null, history: {}, stage: 'start' };
+
+        const ui = {
+            startScreen: document.getElementById('start-screen'),
+            gameScreen: document.getElementById('game-screen'),
+            gameOverScreen: document.getElementById('game-over-screen'),
+            modalContainer: document.getElementById('modal-container'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            playerName: document.getElementById('player-name'),
+            playerStatus: document.getElementById('player-status'),
+            playerMoney: document.getElementById('player-money'),
+            statsPanel: document.getElementById('stats-panel'),
+            mainLog: document.getElementById('main-content'),
+            deathReason: document.getElementById('death-reason'),
+        };
+
+        function renderProgressBar(label, value) { return `<div class="progress-bar"><span class="label">${label}</span><div class="bar"><div class="fill" style="width: ${value}%;">${value > 10 ? value+'%' : ''}</div></div></div>`; }
+        function renderStatsPanel() { let html = renderProgressBar('شادی', gameState.player.happiness) + renderProgressBar('سلامتی', gameState.player.health) + renderProgressBar('هوش', gameState.player.intelligence) + renderProgressBar('زیبایی', gameState.player.looks); if (gameState.player.popularity > 0) { html += renderProgressBar('محبوبیت', gameState.player.popularity); } ui.statsPanel.innerHTML = html; }
+        function renderHeader() { ui.playerName.innerText = `${gameState.player.name} ${gameState.player.countryFlag}`; ui.playerMoney.innerText = `$${gameState.player.money.toLocaleString()}`; ui.playerStatus.innerText = gameState.player.job ? gameState.player.job.title : gameState.player.educationStatus.stage; }
+        function renderLog() { ui.mainLog.innerHTML = ''; const sortedAges = Object.keys(gameState.history).map(Number).sort((a, b) => a - b); sortedAges.forEach(age => { const ageDiv = document.createElement('div'); ageDiv.innerHTML = `<h3>سن: ${age}</h3>`; const list = document.createElement('ul'); gameState.history[age].forEach(event => { const item = document.createElement('li'); item.innerText = event; list.appendChild(item); }); ageDiv.appendChild(list); ui.mainLog.appendChild(ageDiv); }); ui.mainLog.scrollTop = ui.mainLog.scrollHeight; }
+        function renderModal(title, contentHTML) { ui.modalTitle.innerText = title; ui.modalBody.innerHTML = contentHTML; ui.modalContainer.classList.remove('hidden'); }
+        function closeModal() { ui.modalContainer.classList.add('hidden'); }
+
+        function render() {
+            ui.startScreen.classList.toggle('hidden', gameState.stage !== 'start');
+            ui.gameScreen.classList.toggle('hidden', gameState.stage !== 'playing');
+            ui.gameOverScreen.classList.toggle('hidden', gameState.stage !== 'game_over');
+            if (gameState.stage === 'playing') { renderHeader(); renderStatsPanel(); renderLog(); }
+            else if (gameState.stage === 'game_over') { ui.deathReason.innerText = gameState.history[gameState.player.age].slice(-1)[0]; }
+        }
+
+        function handleActionResult({ player, message }) {
+            gameState.player = player;
+            if (message) {
+                const age = gameState.player.age;
+                if (!gameState.history[age]) gameState.history[age] = [];
+                gameState.history[age].push(message);
+            }
+            render();
+            closeModal();
+        }
+
+        function showCareerModal() {
+            let content = `<div><button class="button" id="acting-career-button">بازیگری</button></div>`;
+            renderModal('حرفه', content);
+            document.getElementById('acting-career-button').addEventListener('click', showActingModal);
+        }
+
+        function showActingModal() {
+            const player = gameState.player;
+            let content = '';
+            if (player.activeActingProject) {
+                const project = player.activeActingProject;
+                content = `
+                    <h3>پروژه فعلی: ${project.name} (${project.role})</h3>
+                    <p>زمان باقی‌مانده: ${project.yearsLeft} سال</p>
+                    ${renderProgressBar('عملکرد شما', project.playerPerformance)}
+                    <button class="button" id="practice-role-button">تمرین نقش</button>
+                `;
+            } else {
+                content = `<h3>تست‌های بازیگری</h3>`;
+                const auditions = getAvailableAuditions(player);
+                if (auditions.length === 0) {
+                    content += '<p>تستی وجود ندارد.</p>';
+                } else {
+                    auditions.forEach(project => {
+                        content += `
+                            <div class="modal-item">
+                                <strong>${project.name}</strong> (نقش: ${project.role})
+                                <button class="button" data-project-id='${project.id}'>تست بده</button>
+                            </div>
+                        `;
+                    });
+                }
+            }
+            renderModal('حرفه بازیگری', content);
+        }
+
+        function init() {
+            document.getElementById('new-game-button').addEventListener('click', () => {
+                gameState.player = createNewPlayer();
+                gameState.stage = 'playing';
+                gameState.history = { 0: [`تولدت مبارک، ${gameState.player.name}!`] };
+                render();
+            });
+
+            document.getElementById('next-year-button').addEventListener('click', () => {
+                const { newPlayerState, log } = advanceYear(gameState.player);
+                gameState.player = newPlayerState;
+                const age = gameState.player.age;
+                if (!gameState.history[age]) gameState.history[age] = [];
+                gameState.history[age].push(...log);
+                if (!gameState.player.alive) gameState.stage = 'game_over';
+                render();
+            });
+
+            document.getElementById('restart-button').addEventListener('click', () => {
+                gameState.stage = 'start';
+                render();
+            });
+
+            document.getElementById('career-button').addEventListener('click', showCareerModal);
+            document.getElementById('modal-close-button').addEventListener('click', closeModal);
+
+            ui.modalBody.addEventListener('click', e => {
+                if (e.target.id === 'practice-role-button') {
+                    handleActionResult(practiceRole(gameState.player));
+                }
+                if (e.target.matches('[data-project-id]')) {
+                    const projectId = e.target.dataset.projectId;
+                    const project = getAvailableAuditions(gameState.player).find(p => p.id === projectId);
+                    if(project) handleActionResult(auditionForProject(gameState.player, project));
+                }
+            });
+            render();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
